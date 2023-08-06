@@ -3,14 +3,10 @@
  * 1. Change Delay to millis()
  * 2. Add numeric timer and clock mode
  */
- 
 #include "Arduino.h"
 #include "SevenSegClock.h"
-
-
 #include <Adafruit_GFX.h>
 #include "Adafruit_LEDBackpack.h"
-
 
 SevenSegClock::SevenSegClock(int display_address) {
   _DISPLAY_ADDRESS = display_address;
@@ -20,8 +16,6 @@ SevenSegClock::SevenSegClock(int display_address) {
 void SevenSegClock::begin() {
   clockDisplay.begin(_DISPLAY_ADDRESS);
 }
-
-
 
 void SevenSegClock::timeConvert(int total_sec) {
   //converts input seconds into minutes and seconds
@@ -37,20 +31,20 @@ void SevenSegClock::timeConvert(int total_sec) {
 
 
 void SevenSegClock::error() {
-  //displays Err. on clock
-
-  // writeDigitRaw() bitmask lelgend [B, decimal,mid,top_left,bot_left,bottom, bot_right, top_right, top]
-  // write 'Err.'
+  //displays Err. on clock    // writeDigitRaw() bitmask lelgend [B, decimal,mid,top_left,bot_left,bottom, bot_right, top_right, top]
   clockDisplay.writeDigitRaw(0, B01111001);
   clockDisplay.writeDigitRaw(1, B01010000);
   clockDisplay.writeDigitRaw(3, B11010000);
   clockDisplay.writeDigitRaw(4, B00000000);
+  colon = false;
   clockDisplay.writeDisplay();
 }
 
 void SevenSegClock::haywire(int duration) {
-  //makes clock appear to malfunction with random numbers
-  //TODO: add letters and symbols
+  //makes clock appear to malfunction with random numbers and random timings
+  //TODO: - add letters and symbols
+  //      - fix timing so it is consistent
+
   int maxtime = duration;
   while (duration >= 0) {
     Serial.print("Duration: ");
@@ -69,12 +63,13 @@ void SevenSegClock::haywire(int duration) {
     }
     clockDisplay.drawColon(colon);
     clockDisplay.writeDisplay();
-    delay(random(200, 750));
+    delay(random(200, 666));
     if (duration < maxtime / 2) {
-      blank();
+      clear();
       delay(random(25, 80));
       if (random(10) > 4) {
-        //clockDisplay.print(0xERR, HEX);
+        clockDisplay.print(0xERR, HEX);
+        colon != colon;
       }
     }
     duration -= 1;
@@ -82,17 +77,12 @@ void SevenSegClock::haywire(int duration) {
 }
 
 void SevenSegClock::setSegDisplay(int minutes, int seconds) {
+  colon = true;
   //makes the input time formatted for display (add two 0 spaces to left digits)
   int displayValue = minutes * 100 + seconds;
-  /*Serial.print("     Value to Display:");
-        Serial.print("'");
-        Serial.print(displayValue);
-        Serial.println("'");*/
 
   clockDisplay.print(displayValue, DEC);
-  // Add zero padding when in 24 hour mode and it's midnight.
-  // In this case the print function above won't have leading 0's
-  // which can look confusing.  Go in and explicitly add these zeros.
+  // Add zero padding when in 24 hour mode and it's midnight pad zeros.
   if (minutes < 10) {
     // Pad hour 0.
     clockDisplay.writeDigitNum(0, 0);
@@ -111,6 +101,7 @@ void SevenSegClock::setSegDisplay(int minutes, int seconds) {
 }
 
 void SevenSegClock::runTimer(int secondsToRun, int clockSpeed) {
+  colon = true;
   int time_track = secondsToRun;
   while (time_track != 0) {
     //countdown timer that reduces to 0
@@ -132,12 +123,25 @@ void SevenSegClock::runTimer(int secondsToRun, int clockSpeed) {
     Serial.print("time left: ");
     Serial.println(time_track);
   }
-  //timerEnd();
-  blank();
+  clear();
 }
 
 void SevenSegClock::blank() {
+  //displays blank line on clock    // writeDigitRaw() bitmask lelgend [B, decimal,mid,top_left,bot_left,bottom, bot_right, top_right, top]
+  clockDisplay.writeDigitRaw(0, B01000000);
+  clockDisplay.writeDigitRaw(1, B01000000);
+  clockDisplay.writeDigitRaw(3, B01000000);
+  clockDisplay.writeDigitRaw(4, B01000000);
+  clockDisplay.writeDisplay();
+  colon = true;
+}
+
+void SevenSegClock::clear() {
   //Clears the clock display
-  clockDisplay.print(10000, DEC);
+  clockDisplay.writeDigitRaw(0, B00000000);
+  clockDisplay.writeDigitRaw(1, B00000000);
+  clockDisplay.writeDigitRaw(3, B00000000);
+  clockDisplay.writeDigitRaw(4, B00000000);
+  colon = false;
   clockDisplay.writeDisplay();
 }

@@ -23,11 +23,15 @@ class SevenSegClock {
     void haywire(int duration);
     void setSegDisplay(int minutes, int seconds);
     void runTimer(int secondsToRun, int clockSpeed);
+    void clear();
+    void countUp();
+    void countDown();
 
   private:
     Adafruit_7segment clockDisplay;
     int _DISPLAY_ADDRESS;
     bool colon = true;
+    int countDirection;
     int _currentMinutes;
     int _currentSeconds;
     int _setMinutes;

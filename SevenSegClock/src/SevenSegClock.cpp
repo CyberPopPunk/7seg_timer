@@ -15,6 +15,7 @@ SevenSegClock::SevenSegClock(int display_address) {
 
 void SevenSegClock::begin() {
   clockDisplay.begin(_DISPLAY_ADDRESS);
+  clockDisplay.setBrightness(15);
 }
 
 void SevenSegClock::timeConvert(int total_sec) {
@@ -68,8 +69,8 @@ void SevenSegClock::haywire(int duration) {
       clear();
       delay(random(25, 80));
       if (random(10) > 4) {
-        clockDisplay.print(0xERR, HEX);
-        colon != colon;
+        //clockDisplay.print(0xERR, HEX);
+        //colon != colon;
       }
     }
     duration -= 1;
@@ -144,4 +145,20 @@ void SevenSegClock::clear() {
   clockDisplay.writeDigitRaw(4, B00000000);
   colon = false;
   clockDisplay.writeDisplay();
+}
+
+void SevenSegClock::intConvertTime(int inputInt){
+  //takes an int input and converts it to minutes/seconds time
+  if (inputInt < 0 || inputInt > 5959){
+    Serial.print("Error: invalid input - exiting without setting clock");
+  }
+  int tempMinutes = inputInt/100;
+  int tempSeconds = inputInt % 100;
+
+  if (tempSeconds > 59){
+    Serial.print("error, time not in ISO8601 format, converting seconds to minutes");
+    tempMinutes += 1;
+    tempSeconds -= 60;
+  }
+  setSegDisplay(tempMinutes, tempSeconds);
 }

@@ -23,6 +23,7 @@ class SevenSegClock {
     void haywire(int duration);
     void setSegDisplay(int minutes, int seconds);
     void runTimer(int secondsToRun, int clockSpeed);
+    void intConvertTime(int inputInt);
     void clear();
     void countUp();
     void countDown();

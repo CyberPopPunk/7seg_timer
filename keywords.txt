@@ -1,0 +1,8 @@
+SevenSegClock	KEYWORD1
+begin	KEYWORD2
+timeConvert	KEYWORD2
+error	KEYWORD2
+blank	KEYWORD2
+haywire	KEYWORD2
+setSegDisplay	KEYWORD2
+runTimer	KEYWORD2

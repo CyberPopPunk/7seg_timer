@@ -38,6 +38,8 @@ void SevenSegClock::error() {
   clockDisplay.writeDigitRaw(3, B11010000);
   clockDisplay.writeDigitRaw(4, B00000000);
   colon = false;
+  
+  clockDisplay.drawColon(colon);
   clockDisplay.writeDisplay();
 }
 
@@ -46,11 +48,13 @@ void SevenSegClock::haywire(int duration) {
   //TODO: - add letters and symbols
   //      - fix timing so it is consistent
 
+  
+  duration = duration*2; // adjust for average looptime
   int maxtime = duration;
   while (duration >= 0) {
     Serial.print("Duration: ");
     Serial.println(duration);
-    randomSeed(analogRead(0));
+    randomSeed(random(1000000));
     int randomDigits = random(10000);
     clockDisplay.print(randomDigits, DEC);
     if (randomDigits < 1000) {
@@ -62,17 +66,14 @@ void SevenSegClock::haywire(int duration) {
         clockDisplay.writeDigitNum(2, 0);
       }
     }
-    clockDisplay.drawColon(colon);
+    clockDisplay.drawColon(randomDigits%2);
     clockDisplay.writeDisplay();
-    delay(random(200, 666));
     if (duration < maxtime / 2) {
-      clear();
-      delay(random(25, 80));
-      if (random(10) > 4) {
-        //clockDisplay.print(0xERR, HEX);
-        //colon != colon;
+      if (randomDigits%2) {
+        error();
       }
     }
+    delay(random(100, 666));
     duration -= 1;
   }
 }
@@ -86,8 +87,9 @@ void SevenSegClock::setSegDisplay(int minutes, int seconds) {
   // Add zero padding when in 24 hour mode and it's midnight pad zeros.
   if (minutes < 10) {
     // Pad hour 0.
-    clockDisplay.writeDigitNum(0, 0);
+  clockDisplay.writeDigitRaw(0, B00000000);
     if (minutes == 0) {
+      clockDisplay.writeDigitNum(0, 0);
       clockDisplay.writeDigitNum(1, 0);
       // Also pad when the 10's minute is 0 and should be padded.
       if (seconds < 10) {
@@ -124,7 +126,6 @@ void SevenSegClock::runTimer(int secondsToRun, int clockSpeed) {
     Serial.print("time left: ");
     Serial.println(time_track);
   }
-  clear();
 }
 
 void SevenSegClock::blank() {
